@@ -15,13 +15,12 @@
 # GNU General Public License for more details.
 
 # --- Python standard library ---
-from __future__ import unicode_literals
 import xml.etree.ElementTree as ET
 
 # --- Modules/packages in this plugin ---
-from constants import *
-from utils import *
-from utils_kodi import *
+from .constants import *
+from .utils import *
+from .utils_kodi import *
 
 # -------------------------------------------------------------------------------------------------
 # Data structures
@@ -137,7 +136,7 @@ def audit_load_LB_metadata_XML(filename_FN, games_dic, platforms_dic, gameimages
     log_verb('audit_load_LB_metadata_XML() Loading "{0}"'.format(filename_FN.getPath()))
     try:
         xml_tree = ET.parse(filename_FN.getPath())
-    except ET.ParseError, e:
+    except ET.ParseError as e:
         log_error('(ParseError) Exception parsing XML categories.xml')
         log_error('(ParseError) {0}'.format(str(e)))
         return
@@ -207,7 +206,7 @@ def audit_load_OfflineScraper_XML(xml_file):
     log_debug('audit_load_OfflineScraper_XML() Loading "{}"'.format(xml_file))
     try:
         xml_tree = ET.parse(xml_file)
-    except ET.ParseError, e:
+    except ET.ParseError as e:
         log_error('(ParseError) Exception parsing XML categories.xml')
         log_error('(ParseError) {}'.format(str(e)))
         return games

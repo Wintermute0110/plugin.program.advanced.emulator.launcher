@@ -107,7 +107,7 @@ class Test_gamesdb_scraper(unittest.TestCase):
                 
         # assert
         self.assertTrue(actual)
-        self.assertEqual(u'Castlevania - The Lecarde Chronicles', rom.get_name())
+        self.assertEqual('Castlevania - The Lecarde Chronicles', rom.get_name())
         print(rom)
         
     # add actual gamesdb apikey above and comment out patch attributes to do live tests

@@ -104,7 +104,7 @@ class Test_mobygames_scraper(unittest.TestCase):
         if mocked_json_file == '':
             return net_get_URL_as_json(url)
 
-        print 'reading mocked data from file: {}'.format(mocked_json_file)
+        print('reading mocked data from file: {}'.format(mocked_json_file))
 
         return read_file_as_json(mocked_json_file)
 
@@ -146,7 +146,7 @@ class Test_mobygames_scraper(unittest.TestCase):
 
         # --- Assert ---
         self.assertTrue(actual)
-        self.assertEqual(u'Castlevania', rom.get_name())
+        self.assertEqual('Castlevania', rom.get_name())
         print(rom)
 
     # add actual mobygames apikey above and comment out patch attributes to do live tests

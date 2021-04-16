@@ -16,7 +16,6 @@
 # GNU General Public License for more details.
 
 # --- Python standard library ---
-from __future__ import unicode_literals
 import os
 import pprint
 import re
@@ -98,7 +97,7 @@ def text_get_multidisc_info(ROM_FN):
         matchObj = re.match(r'\(Disc ([0-9]+)\)', token)
         if matchObj:
             log_debug('text_get_multidisc_info() ### Matched Redump multidisc ROM ###')
-            tokens_idx = range(0, len(tokens))
+            tokens_idx = list(range(0, len(tokens)))
             tokens_idx.remove(index)
             tokens_nodisc_idx = list(tokens_idx)
             tokens_mdisc = [tokens[x] for x in tokens_nodisc_idx]
@@ -109,7 +108,7 @@ def text_get_multidisc_info(ROM_FN):
         matchObj = re.match(r'\(Disc ([0-9]+) of ([0-9]+)\)', token)
         if matchObj:
             log_debug('text_get_multidisc_info() ### Matched TOSEC/Trurip multidisc ROM ###')
-            tokens_idx = range(0, len(tokens))
+            tokens_idx = list(range(0, len(tokens)))
             tokens_idx.remove(index)
             tokens_nodisc_idx = list(tokens_idx)
             # log_debug('text_get_multidisc_info() tokens_idx         = {0}'.format(tokens_idx))

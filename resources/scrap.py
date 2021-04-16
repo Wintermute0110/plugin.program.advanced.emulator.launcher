@@ -18,8 +18,6 @@
 # See the GNU General Public License for more details.
 
 # --- Python standard library ---
-from __future__ import unicode_literals
-from __future__ import division
 import abc
 import base64
 import collections
@@ -28,8 +26,8 @@ import datetime
 import json
 import socket
 import time
-import urllib
-import urlparse
+import urllib.request, urllib.parse, urllib.error
+import urllib.parse
 import zipfile
 
 # --- AEL packages ---
@@ -1312,7 +1310,7 @@ class ScrapeStrategy(object):
                     status_dic['dialog'] = KODI_MESSAGE_NOTIFY
                     status_dic['msg'] = '{0} metadata unchanged'.format(object_name)
                     return
-                search_term = keyboard.getText().decode('utf-8')
+                search_term = keyboard.getText()
             else:
                 log_debug('Scraper does not support search strings. Setting it to None.')
                 search_term = None
@@ -1358,9 +1356,7 @@ class ScrapeStrategy(object):
 # The scrapers are Launcher and ROM agnostic. All the required Launcher/ROM properties are
 # stored in the strategy object.
 #
-class Scraper(object):
-    __metaclass__ = abc.ABCMeta
-
+class Scraper(object, metaclass=abc.ABCMeta):
     # --- Class variables ------------------------------------------------------------------------
     # When then number of network error/exceptions is bigger than this threshold the scraper
     # is deactivated. This is useful in the ROM Scanner to not flood the user with error
@@ -1588,7 +1584,7 @@ class Scraper(object):
             # Write to disk
             json_file_path, json_fname = self._get_scraper_file_name(cache_type, self.platform)
             file = io.open(json_file_path, 'w', encoding = 'utf-8')
-            file.write(unicode(json_data))
+            file.write(str(json_data))
             file.close()
             # log_debug('Saved "{}"'.format(json_file_path))
             log_debug('Saved "<SCRAPER_CACHE_DIR>/{}"'.format(json_fname))
@@ -1625,7 +1621,7 @@ class Scraper(object):
             # Write to disk
             json_file_path, json_fname = self._get_global_file_name(cache_type)
             file = io.open(json_file_path, 'w', encoding = 'utf-8')
-            file.write(unicode(json_data))
+            file.write(str(json_data))
             file.close()
             # log_debug('Saved global "{}"'.format(json_file_path))
             log_debug('Saved global "<SCRAPER_CACHE_DIR>/{}"'.format(json_fname))
@@ -1789,7 +1785,7 @@ class Scraper(object):
     def _get_scraper_file_name(self, cache_type, platform):
         scraper_filename = self.get_filename()
         json_fname = scraper_filename + '__' + platform + '__' + cache_type + '.json'
-        json_full_path = os.path.join(self.scraper_cache_dir, json_fname).decode('utf-8')
+        json_full_path = os.path.join(self.scraper_cache_dir, json_fname)
 
         return json_full_path, json_fname
 
@@ -1842,7 +1838,7 @@ class Scraper(object):
     # --- Private global disk caches -------------------------------------------------------------
     def _get_global_file_name(self, cache_type):
         json_fname = cache_type + '.json'
-        json_full_path = os.path.join(self.scraper_cache_dir, json_fname).decode('utf-8')
+        json_full_path = os.path.join(self.scraper_cache_dir, json_fname)
 
         return json_full_path, json_fname
 
@@ -2176,11 +2172,13 @@ class TheGamesDB(Scraper):
         ASSET_FANART_ID,
         ASSET_BANNER_ID,
         ASSET_CLEARLOGO_ID,
+        ASSET_TITLE_ID,
         ASSET_SNAP_ID,
         ASSET_BOXFRONT_ID,
         ASSET_BOXBACK_ID,
     ]
     asset_name_mapping = {
+        'titlescreen': ASSET_TITLE_ID,
         'screenshot': ASSET_SNAP_ID,
         'boxart' : ASSET_BOXFRONT_ID,
         'boxartfront': ASSET_BOXFRONT_ID,
@@ -2383,7 +2381,7 @@ class TheGamesDB(Scraper):
         # quote_plus() will convert the spaces into '+'. Note that quote_plus() requires an
         # UTF-8 encoded string and does not work with Unicode strings.
         # https://stackoverflow.com/questions/22415345/using-pythons-urllib-quote-plus-on-utf-8-strings-with-safe-arguments
-        search_string_encoded = urllib.quote_plus(search_term.encode('utf8'))
+        search_string_encoded = urllib.parse.quote_plus(search_term.encode('utf8'))
         url_tail = '?apikey={}&name={}&filter[platform]={}'.format(
             self._get_API_key(), search_string_encoded, scraper_platform)
         url = TheGamesDB.URL_ByGameName + url_tail
@@ -2401,7 +2399,7 @@ class TheGamesDB(Scraper):
     # Return a list of candiate games.
     # Return None if error/exception.
     # Return empty list if no candidates found.
-    def _retrieve_games_from_url(self, url, search_term, platform, scraper_platform, status_dic):
+    def _retrieve_games_from_url(self, url, search_term, platform, scraper_platform:int, status_dic):
         # --- Get URL data as JSON ---
         json_data = self._retrieve_URL_as_JSON(url, status_dic)
         # If status_dic mark an error there was an exception. Return None.
@@ -2911,10 +2909,10 @@ class MobyGames(Scraper):
         return json_data
 
     # --- Retrieve list of games ---
-    def _search_candidates(self, search_term, platform, scraper_platform, status_dic):
+    def _search_candidates(self, search_term, platform, scraper_platform:int, status_dic):
         # --- Retrieve JSON data with list of games ---
-        search_string_encoded = urllib.quote_plus(search_term.encode('utf8'))
-        if scraper_platform == '0':
+        search_string_encoded = urllib.parse.quote_plus(search_term.encode('utf8'))
+        if scraper_platform == 0:
             # Unkwnon or wrong platform case.
             url_tail = '?api_key={}&format=brief&title={}'.format(
                 self.api_key, search_string_encoded)
@@ -3150,7 +3148,7 @@ class MobyGames(Scraper):
 #   platform.
 #
 # ssuserInfos.php : Informations sur l'utilisateur ScreenScraper
-# userlevelsListe.php : Liste des niveaux utilisateurs de ScreenScraper 
+# userlevelsListe.php : Liste des niveaux utilisateurs de ScreenScraper
 # nbJoueursListe.php : Liste des nombres de joueurs
 # supportTypesListe.php : Liste des types de supports
 # romTypesListe.php : Liste des types de roms
@@ -3612,7 +3610,7 @@ class ScreenScraper(Scraper):
         log_debug('ScreenScraper.debug_game_search() Calling jeuRecherche.php...')
         scraper_platform = AEL_platform_to_ScreenScraper(platform)
         system_id = scraper_platform
-        recherche = urllib.quote(rombase_noext)
+        recherche = urllib.parse.quote(rombase_noext)
         log_debug('ScreenScraper.debug_game_search() system_id  "{}"'.format(system_id))
         log_debug('ScreenScraper.debug_game_search() recherche  "{}"'.format(recherche))
 
@@ -3672,7 +3670,7 @@ class ScreenScraper(Scraper):
         md5_str = checksums['md5']
         sha1_str = checksums['sha1']
         # rom_name = urllib.quote(checksums['rom_name'])
-        rom_name = urllib.quote_plus(checksums['rom_name'])
+        rom_name = urllib.parse.quote_plus(checksums['rom_name'])
         rom_size = checksums['size']
         # log_debug('ScreenScraper._search_candidates_jeuInfos() ssid       "{}"'.format(self.ssid))
         # log_debug('ScreenScraper._search_candidates_jeuInfos() ssid       "{}"'.format('***'))
@@ -3734,7 +3732,7 @@ class ScreenScraper(Scraper):
         log_debug('ScreenScraper._search_candidates_jeuRecherche() Calling jeuRecherche.php...')
         scraper_platform = AEL_platform_to_ScreenScraper(platform)
         system_id = scraper_platform
-        recherche = urllib.quote_plus(rombase_noext)
+        recherche = urllib.parse.quote_plus(rombase_noext)
         log_debug('ScreenScraper._search_candidates_jeuRecherche() system_id  "{}"'.format(system_id))
         log_debug('ScreenScraper._search_candidates_jeuRecherche() recherche  "{}"'.format(recherche))
 
@@ -3998,7 +3996,7 @@ class ScreenScraper(Scraper):
     # https://stackoverflow.com/questions/14692690/access-nested-dictionary-items-via-a-list-of-keys
     def _recursive_iter(self, obj, keys = ()):
         if isinstance(obj, dict):
-            for k, v in obj.iteritems():
+            for k, v in obj.items():
                 # yield from self._recursive_iter(item)
                 for k_t, v_t in self._recursive_iter(v, keys + (k,)):
                     yield k_t, v_t
@@ -4027,7 +4025,7 @@ class ScreenScraper(Scraper):
             # log_debug('{} "{}"'.format(keys, item))
             # log_debug('Type item "{}"'.format(type(item)))
             # Skip non string objects.
-            if not isinstance(item, str) and not isinstance(item, unicode): continue
+            if not isinstance(item, str): continue
             if item.startswith('http'):
                 # log_debug('Adding URL "{}"'.format(item))
                 URL_key_list.append(keys)
@@ -4295,7 +4293,7 @@ class GameFAQs(Scraper):
         # --- Get URL data as a text string ---
         if url is None:
             url = 'https://gamefaqs.gamespot.com/search_advanced'
-            data = urllib.urlencode({'game': search_term, 'platform': scraper_platform})
+            data = urllib.parse.urlencode({'game': search_term, 'platform': scraper_platform})
             page_data = net_post_URL(url, data)
         else:
             page_data = net_get_URL(url)

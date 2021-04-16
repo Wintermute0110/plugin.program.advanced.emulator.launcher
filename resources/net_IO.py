@@ -16,10 +16,9 @@
 # GNU General Public License for more details.
 
 # --- Python standard library ---
-from __future__ import unicode_literals
 import sys
 import random
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import os
 
 # --- AEL packages ---
@@ -83,10 +82,10 @@ def net_download_img(img_url, file_path):
     # --- Download image to a buffer in memory ---
     # If an exception happens here no file is created (avoid creating files with 0 bytes).
     try:
-        req = urllib2.Request(img_url)
+        req = urllib.request.Request(img_url)
         # req.add_unredirected_header('User-Agent', net_get_random_UserAgent())
         req.add_unredirected_header('User-Agent', USER_AGENT)
-        img_buf = urllib2.urlopen(req, timeout = 120).read()
+        img_buf = urllib.request.urlopen(req, timeout = 120).read()
     # If an exception happens record it in the log and do nothing.
     # This must be fixed. If an error happened when downloading stuff caller code must
     # known to take action.
@@ -126,7 +125,7 @@ def net_download_img(img_url, file_path):
 #          a Unicode string or None if network error/exception. Second tuple element is the 
 #          HTTP status code as integer or None if network error/exception.
 def net_get_URL(url, url_log = None):
-    req = urllib2.Request(url)
+    req = urllib.request.Request(url)
     req.add_unredirected_header('User-Agent', USER_AGENT)
     if url_log is None:
         log_debug('net_get_URL() GET URL "{}"'.format(req.get_full_url()))
@@ -135,13 +134,13 @@ def net_get_URL(url, url_log = None):
 
     page_bytes = http_code = None
     try:
-        f = urllib2.urlopen(req, timeout = 120)
+        f = urllib.request.urlopen(req, timeout = 120)
         page_bytes = f.read()
         http_code = f.getcode()
         f.close()
     # If the server returns an HTTP status code then make sure http_code has the error code
     # and page_bytes the message.
-    except urllib2.HTTPError as ex:
+    except urllib.error.HTTPError as ex:
         http_code = ex.code
         # Try to read contents of the web page.
         # If it fails get error string from the exception object.
@@ -149,7 +148,7 @@ def net_get_URL(url, url_log = None):
             page_bytes = ex.read()
             ex.close()
         except:
-            page_bytes = unicode(ex.reason)
+            page_bytes = str(ex.reason)
         log_error('(HTTPError) In net_get_URL()')
         log_error('(HTTPError) Object type "{}"'.format(type(ex)))
         log_error('(HTTPError) Message "{}"'.format(str(ex)))
@@ -183,14 +182,14 @@ def net_get_URL_oneline(url, url_log = None):
 # Do HTTP request with POST: https://docs.python.org/2/library/urllib2.html#urllib2.Request
 def net_post_URL(url, data):
     page_data = ''
-    req = urllib2.Request(url, data)
+    req = urllib.request.Request(url, data)
     req.add_unredirected_header('User-Agent', USER_AGENT)
     req.add_header("Content-type", "application/x-www-form-urlencoded")
     req.add_header("Acept", "text/plain")
     log_debug('net_post_URL() POST URL "{0}"'.format(req.get_full_url()))
 
     try:
-        f = urllib2.urlopen(req, timeout = 120)
+        f = urllib.request.urlopen(req, timeout = 120)
         page_bytes = f.read()
         f.close()
     # If an exception happens return empty data.
@@ -226,6 +225,6 @@ def net_decode_URL_data(page_bytes, encoding):
         page_data = page_bytes.encode('utf-16')
     else:
         # python3: page_data = str(page_bytes, encoding)
-        page_data = unicode(page_bytes, encoding)
+        page_data = str(page_bytes, encoding)
 
     return page_data

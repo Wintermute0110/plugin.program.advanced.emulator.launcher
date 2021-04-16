@@ -4,7 +4,6 @@
 # Reads all Libretro INFO files, parses them and puts information into a JSON file.
 
 # --- Python standard library ---
-from __future__ import unicode_literals
 import glob
 import json
 import os
